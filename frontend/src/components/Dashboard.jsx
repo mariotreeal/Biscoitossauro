@@ -14,18 +14,54 @@ export default function Dashboard({ metrics, onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Welcome Banner Material 3 */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#ffddb8] via-[#f7ede5] to-[#caeca0]/40 p-6 sm:p-8 border border-[#d4c3b5]">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#855300]/10 text-[#855300] text-xs font-semibold uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            Visão Geral do CRM
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#ffddb8] via-[#f7ede5] to-[#caeca0]/40 p-6 sm:p-8 border border-[#d4c3b5] shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="relative z-10 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#855300]/10 text-[#855300] text-xs font-semibold uppercase tracking-wider mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              Visão Geral do CRM
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#211a14] tracking-tight">
+              Bem-vindo ao Portal Biscoitossauro!
+            </h1>
+            <p className="mt-2 text-sm sm:text-base text-[#50453a] leading-relaxed">
+              Gerencie empresas clientes, contatos corporativos e pedidos de biscoitos personalizados para eventos e marcas de todo o Brasil.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button 
+                onClick={() => onNavigate('companies')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#855300] text-white text-xs font-bold hover:bg-[#6c4300] transition-colors shadow-sm"
+              >
+                <Building2 className="w-3.5 h-3.5" /> Ver Empresas
+              </button>
+              <button 
+                onClick={() => onNavigate('persons')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#d4c3b5] text-[#211a14] text-xs font-bold hover:bg-[#fff8f4] transition-colors"
+              >
+                <Users className="w-3.5 h-3.5" /> Ver Contatos
+              </button>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#211a14] tracking-tight">
-            Bem-vindo ao Portal Biscoitossauro
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-[#50453a] leading-relaxed">
-            Gerencie empresas clientes, contatos corporativos e consumidores finais personalizados para eventos e marcas.
-          </p>
+
+          {/* Brand Logo & Mascot Showcase */}
+          <div className="hidden sm:flex items-center justify-center flex-shrink-0">
+            <div className="relative group">
+              <div className="w-36 h-36 md:w-44 md:h-44 rounded-3xl overflow-hidden bg-[#1a1410] border-2 border-[#ffddb8] shadow-md group-hover:scale-105 transition-transform duration-300 p-1 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="Logo Biscoitossauro" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="absolute -bottom-2 -left-2 w-12 h-12 rounded-2xl bg-[#ffddb8] border-2 border-white shadow-md overflow-hidden p-0.5">
+                <img 
+                  src="/mascot.png" 
+                  alt="Mascote Biscoitossauro" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

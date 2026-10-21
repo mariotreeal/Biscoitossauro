@@ -37,10 +37,19 @@ export default function Login() {
         <div className="bg-[#fff8f4] border border-[#d4c3b5] rounded-3xl p-8 sm:p-10 shadow-xl m3-elevation-2 backdrop-blur-sm">
           {/* Brand header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#ffddb8] text-[#855300] mb-4 shadow-sm">
-              <Cookie className="w-9 h-9 transform -rotate-12" />
+            <div className="relative inline-block mb-3">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-3xl overflow-hidden shadow-lg border-2 border-[#ffddb8] bg-[#1a1410] flex items-center justify-center p-1 group hover:scale-105 transition-transform duration-300">
+                <img 
+                  src="/mascot.png" 
+                  alt="Mascote Biscoitossauro" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#caeca0] text-[#0b2000] shadow-sm">
+                <Sparkles className="w-3.5 h-3.5" />
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#211a14] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#211a14] tracking-tight">
               Biscoitossauro
             </h1>
             <p className="text-sm font-medium text-[#715b41] mt-1">
