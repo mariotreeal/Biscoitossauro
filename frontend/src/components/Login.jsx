@@ -4,8 +4,8 @@ import { Cookie, Lock, Mail, AlertCircle, ArrowRight, Sparkles } from 'lucide-re
 
 export default function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('biscoitossauros@gmail.com');
-  const [password, setPassword] = useState('baronildo');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -97,11 +97,6 @@ export default function Login() {
             </div>
 
             {/* Hint of default login */}
-            <div className="p-3 rounded-xl bg-[#f7ede5] text-xs text-[#715b41] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#855300] flex-shrink-0" />
-              <span>Acesso padrão pré-configurado para o primeiro acesso.</span>
-            </div>
-
             {/* Material 3 Filled Button (Pill shape) */}
             <button
               type="submit"

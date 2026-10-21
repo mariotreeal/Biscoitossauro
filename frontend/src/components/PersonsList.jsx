@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { searchCep } from '../services/cep';
+import InteractionsTimeline from './InteractionsTimeline';
 import { 
   Users, 
   Plus, 
@@ -16,7 +18,10 @@ import {
   ChevronRight,
   Filter,
   Calendar,
-  Building
+  Building,
+  Loader2,
+  Cake,
+  ExternalLink
 } from 'lucide-react';
 
 export default function PersonsList() {
@@ -47,7 +52,6 @@ export default function PersonsList() {
     city: '',
     state: '',
     notes: '',
-    // Vínculo inicial opcional
     initial_company_id: '',
     initial_role: '',
     initial_department: ''
@@ -55,6 +59,7 @@ export default function PersonsList() {
   const [formData, setFormData] = useState(initialForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
 
   // Empresas disponíveis para vínculo
   const [availableCompanies, setAvailableCompanies] = useState([]);
@@ -112,6 +117,29 @@ export default function PersonsList() {
     return () => clearTimeout(timer);
   }, [search, typeFilter]);
 
+  // Busca de CEP Automática
+  const handleCepChange = async (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, zip_code: value }));
+
+    const clean = value.replace(/\D/g, '');
+    if (clean.length === 8) {
+      setLoadingCep(true);
+      const address = await searchCep(clean);
+      setLoadingCep(false);
+      if (address) {
+        setFormData(prev => ({
+          ...prev,
+          street: address.street || prev.street,
+          neighborhood: address.neighborhood || prev.neighborhood,
+          city: address.city || prev.city,
+          state: address.state || prev.state,
+          complement: address.complement || prev.complement
+        }));
+      }
+    }
+  };
+
   const handleOpenCreate = () => {
     setEditingPerson(null);
     setFormData(initialForm);
@@ -158,6 +186,8 @@ export default function PersonsList() {
           payload.initial_company_id = parseInt(payload.initial_company_id);
         } else {
           delete payload.initial_company_id;
+          delete payload.initial_role;
+          delete payload.initial_department;
         }
         await api.post('/persons', payload);
       }
@@ -187,12 +217,12 @@ export default function PersonsList() {
     }
   };
 
-  // Vincular pessoa a uma empresa adicional
+  // Vínculo com Empresa
   const handleOpenAddCompany = () => {
-    const existingCompanyIds = viewingPerson.companies?.map(c => c.company_id) || [];
-    const filtered = availableCompanies.filter(c => !existingCompanyIds.includes(c.id));
+    const linkedCompanyIds = viewingPerson.companies?.map(c => c.company_id) || [];
+    const unlinked = availableCompanies.filter(c => !linkedCompanyIds.includes(c.id));
     setNewCompanyLink({
-      company_id: filtered[0]?.id || '',
+      company_id: unlinked[0]?.id || '',
       role: '',
       department: '',
       is_primary: false
@@ -219,7 +249,7 @@ export default function PersonsList() {
       setViewingPerson(updated.data);
       fetchPersons();
     } catch (err) {
-      setLinkingError(err.response?.data?.detail || 'Erro ao associar a empresa.');
+      setLinkingError(err.response?.data?.detail || 'Erro ao associar empresa.');
     }
   };
 
@@ -249,7 +279,7 @@ export default function PersonsList() {
             </span>
           </div>
           <p className="text-sm text-[#715b41]">
-            Cadastro independente de contatos corporativos e consumidores finais
+            Cadastro independente de contatos corporativos, compradores e consumidores finais
           </p>
         </div>
 
@@ -262,124 +292,122 @@ export default function PersonsList() {
         </button>
       </div>
 
-      {/* Filtros e Busca */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-        <div className="bg-white rounded-2xl p-2 border border-[#d4c3b5] flex items-center gap-2 w-full sm:max-w-md shadow-xs">
+      {/* Barra de Filtros e Busca */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex-1 bg-white rounded-2xl p-2 border border-[#d4c3b5] flex items-center gap-2 shadow-xs">
           <Search className="w-5 h-5 text-[#715b41] ml-2 flex-shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, CPF, e-mail, telefone..."
+            placeholder="Buscar por nome, e-mail, CPF, telefone ou cidade..."
             className="w-full text-sm bg-transparent outline-none text-[#211a14] placeholder-[#827568]"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="p-1 text-[#715b41] hover:text-[#211a14]">
+            <button onClick={() => setSearch('')} className="p-1 text-[#715b41] hover:text-[#211a14] cursor-pointer">
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="sm:w-56 bg-white rounded-2xl px-3 py-2 border border-[#d4c3b5] flex items-center gap-2 shadow-xs">
+          <Filter className="w-4 h-4 text-[#715b41] flex-shrink-0" />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-2xl border border-[#d4c3b5] bg-white text-sm font-medium text-[#211a14] outline-none focus:border-[#855300]"
+            className="w-full text-xs bg-transparent outline-none text-[#211a14] font-medium"
           >
-            <option value="">Todos os tipos</option>
-            <option value="Consumidor Final">Consumidor Final (B2C)</option>
-            <option value="Contato Corporativo">Contato Corporativo (B2B)</option>
+            <option value="">Todos os Tipos</option>
+            <option value="Consumidor Final">Consumidor Final</option>
+            <option value="Contato Corporativo">Contato Corporativo</option>
             <option value="Parceiro">Parceiro</option>
           </select>
         </div>
       </div>
 
-      {/* Grid de Pessoas / Cards Material 3 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Grid de Cards de Pessoas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
           <div className="col-span-full text-center py-12 text-[#715b41]">
-            <div className="inline-block w-8 h-8 border-2 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
+            <div className="inline-block w-7 h-7 border-3 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
             <div>Carregando pessoas...</div>
           </div>
         ) : persons.length === 0 ? (
-          <div className="col-span-full bg-white rounded-3xl p-12 text-center border border-[#d4c3b5]">
-            <Users className="w-12 h-12 text-[#827568] mx-auto mb-3 opacity-40" />
-            <h3 className="text-base font-bold text-[#211a14]">Nenhuma pessoa encontrada</h3>
-            <p className="text-xs text-[#715b41] mt-1">
-              Cadastre a primeira pessoa física ou contato comercial no botão acima.
-            </p>
+          <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-[#d4c3b5]">
+            <Users className="w-10 h-10 text-[#d4c3b5] mx-auto mb-2" />
+            <p className="text-sm font-semibold text-[#50453a]">Nenhuma pessoa encontrada.</p>
+            <p className="text-xs text-[#715b41] mt-1">Clique em "Nova Pessoa" para iniciar o cadastro.</p>
           </div>
         ) : (
           persons.map((p) => (
             <div
               key={p.id}
-              className="bg-white rounded-3xl p-5 border border-[#d4c3b5] hover:border-[#855300] transition-all hover:shadow-md flex flex-col justify-between group"
+              className="bg-white rounded-3xl border border-[#d4c3b5] p-5 hover:border-[#855300]/50 transition-all shadow-xs hover:shadow-md flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-[#caeca0] text-[#496636] flex items-center justify-center font-bold text-base flex-shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-[#caeca0] text-[#496636] flex items-center justify-center font-bold text-lg flex-shrink-0">
                       {p.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="font-bold text-[#211a14] text-base leading-snug group-hover:text-[#855300] transition-colors">
+                      <h3
+                        onClick={() => setViewingPerson(p)}
+                        className="font-bold text-[#211a14] text-base leading-snug line-clamp-1 hover:text-[#855300] cursor-pointer"
+                        title={p.name}
+                      >
                         {p.name}
                       </h3>
-                      <span className="text-[11px] text-[#715b41] font-medium">
+                      <span className="text-[11px] font-semibold text-[#715b41] block">
                         {p.type || 'Consumidor Final'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Dados de Contato */}
-                <div className="space-y-1.5 text-xs text-[#50453a] my-4">
+                <div className="mt-4 space-y-2 text-xs text-[#50453a]">
                   {p.cpf && (
                     <div className="font-mono text-[11px] text-[#715b41]">
-                      CPF: {p.cpf}
+                      <span className="font-semibold text-[#211a14]">CPF:</span> {p.cpf}
                     </div>
                   )}
+
+                  {p.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
+                      <span>{p.phone}</span>
+                    </div>
+                  )}
+
                   {p.email && (
-                    <div className="flex items-center gap-1.5 text-[#715b41] truncate">
-                      <Mail className="w-3.5 h-3.5 flex-shrink-0 text-[#855300]" />
+                    <div className="flex items-center gap-2 truncate">
+                      <Mail className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
                       <span className="truncate">{p.email}</span>
                     </div>
                   )}
-                  {(p.phone || p.whatsapp) && (
-                    <div className="flex items-center gap-1.5 text-[#715b41]">
-                      <Phone className="w-3.5 h-3.5 flex-shrink-0 text-[#855300]" />
-                      <span>{p.whatsapp || p.phone}</span>
-                    </div>
-                  )}
+
                   {p.city && (
-                    <div className="flex items-center gap-1.5 text-[#715b41]">
-                      <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[#855300]" />
-                      <span>{p.city}{p.state ? ` - ${p.state}` : ''}</span>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
+                      <span>{p.city} - {p.state}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Vínculos com Empresas (Badge e Cargos) */}
-                <div className="pt-3 border-t border-[#f7ede5]">
-                  <div className="flex items-center gap-1 text-xs text-[#715b41] font-semibold mb-1.5">
+                {/* Empresas Vinculadas */}
+                <div className="pt-3 mt-3 border-t border-[#f7ede5]">
+                  <div className="flex items-center gap-1.5 text-xs text-[#715b41]">
                     <Building2 className="w-3.5 h-3.5 text-[#855300]" />
-                    <span>Empresas Vinculadas ({p.companies?.length || 0}):</span>
+                    {p.companies && p.companies.length > 0 ? (
+                      <span className="font-medium text-[#211a14]">
+                        {p.companies[0].company?.trade_name}
+                        {p.companies[0].role && ` (${p.companies[0].role})`}
+                        {p.companies.length > 1 && ` +${p.companies.length - 1}`}
+                      </span>
+                    ) : (
+                      <span className="italic text-[#827568]">Sem empresas vinculadas</span>
+                    )}
                   </div>
-                  {p.companies && p.companies.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {p.companies.map((c) => (
-                        <span
-                          key={c.id}
-                          className="text-[11px] bg-[#f7ede5] text-[#211a14] px-2 py-0.5 rounded-md font-medium border border-[#d4c3b5]/50 flex items-center gap-1"
-                        >
-                          <span className="font-bold">{c.company?.trade_name}</span>
-                          {c.role && <span className="text-[#855300]">({c.role})</span>}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-[11px] text-[#827568] italic">Sem vínculos empresariais (Pessoa física individual)</span>
-                  )}
                 </div>
               </div>
 
@@ -387,23 +415,23 @@ export default function PersonsList() {
               <div className="pt-4 mt-3 border-t border-[#f7ede5] flex items-center justify-between">
                 <button
                   onClick={() => setViewingPerson(p)}
-                  className="text-xs font-bold text-[#855300] hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-[#855300] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <span>Ficha & Empresas</span>
+                  <span>Visão Completa</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleOpenEdit(p)}
                     title="Editar Pessoa"
-                    className="p-1.5 rounded-lg text-[#715b41] hover:text-[#855300] hover:bg-[#ffddb8]/40"
+                    className="p-1.5 rounded-lg text-[#715b41] hover:text-[#855300] hover:bg-[#ffddb8]/40 cursor-pointer"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setDeletingPerson(p)}
                     title="Excluir Pessoa"
-                    className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6]/40"
+                    className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6]/40 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -422,12 +450,12 @@ export default function PersonsList() {
               <div className="flex items-center gap-2">
                 <Users className="w-6 h-6 text-[#855300]" />
                 <h3 className="text-xl font-bold text-[#211a14]">
-                  {editingPerson ? 'Editar Cadastro de Pessoa' : 'Nova Pessoa (CRM)'}
+                  {editingPerson ? 'Editar Pessoa' : 'Cadastrar Nova Pessoa'}
                 </h3>
               </div>
               <button 
                 onClick={() => setIsFormModalOpen(false)}
-                className="p-1 text-[#715b41] hover:text-[#211a14] rounded-full hover:bg-[#f7ede5]"
+                className="p-1 text-[#715b41] hover:text-[#211a14] rounded-full hover:bg-[#f7ede5] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -456,15 +484,13 @@ export default function PersonsList() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ex: Maria Fernandes"
+                      placeholder="Ex: Mariana Albuquerque"
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                      CPF
-                    </label>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">CPF</label>
                     <input
                       type="text"
                       value={formData.cpf}
@@ -476,22 +502,7 @@ export default function PersonsList() {
 
                   <div>
                     <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                      Tipo de Contato / Perfil
-                    </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
-                    >
-                      <option value="Consumidor Final">Consumidor Final (B2C)</option>
-                      <option value="Contato Corporativo">Contato Corporativo (B2B)</option>
-                      <option value="Parceiro">Parceiro / Fornecedor</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                      Data de Nascimento
+                      Data de Nascimento / Aniversário
                     </label>
                     <input
                       type="date"
@@ -500,112 +511,91 @@ export default function PersonsList() {
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
                     />
                   </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">
+                      Perfil / Classificação
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white font-medium"
+                    >
+                      <option value="Consumidor Final">Consumidor Final</option>
+                      <option value="Contato Corporativo">Contato Corporativo</option>
+                      <option value="Parceiro">Parceiro / Fornecedor</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              {/* Seção 2: Contato */}
+              {/* Seção 2: Contatos */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#855300] mb-3">
-                  2. Contatos & Comunicação
+                  2. Canais de Contato
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                      E-mail
-                    </label>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">E-mail</label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="maria@email.com"
+                      placeholder="mariana@exemplo.com.br"
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                      WhatsApp / Celular
-                    </label>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">Telefone Fixo</label>
+                    <input
+                      type="text"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="(11) 3456-7890"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">WhatsApp</label>
                     <input
                       type="text"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      placeholder="(11) 99999-8888"
+                      placeholder="(11) 98765-4321"
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Seção 3: Vínculo Opcional Imediato com Empresa (na criação) */}
-              {!editingPerson && (
-                <div className="p-4 bg-[#f7ede5] rounded-2xl border border-[#d4c3b5]">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#855300] mb-2 flex items-center gap-1.5">
-                    <Building className="w-4 h-4" />
-                    Vincular a uma Empresa Agora (Opcional)
-                  </h4>
-                  <p className="text-xs text-[#715b41] mb-3">
-                    Você pode associar esta pessoa a uma empresa agora ou fazer isso depois.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-[#50453a] mb-1">Empresa</label>
-                      <select
-                        value={formData.initial_company_id}
-                        onChange={(e) => setFormData({ ...formData, initial_company_id: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#827568] bg-white text-xs outline-none"
-                      >
-                        <option value="">Nenhuma por enquanto</option>
-                        {availableCompanies.map((c) => (
-                          <option key={c.id} value={c.id}>{c.trade_name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-[#50453a] mb-1">Cargo / Função</label>
-                      <input
-                        type="text"
-                        value={formData.initial_role}
-                        onChange={(e) => setFormData({ ...formData, initial_role: e.target.value })}
-                        placeholder="Ex: Gerente de RH"
-                        className="w-full px-3 py-2 rounded-xl border border-[#827568] bg-white text-xs outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-[#50453a] mb-1">Departamento</label>
-                      <input
-                        type="text"
-                        value={formData.initial_department}
-                        onChange={(e) => setFormData({ ...formData, initial_department: e.target.value })}
-                        placeholder="Ex: Compras"
-                        className="w-full px-3 py-2 rounded-xl border border-[#827568] bg-white text-xs outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Seção 4: Endereço */}
+              {/* Seção 3: Endereço com Busca Automática por CEP */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#855300] mb-3">
-                  3. Endereço de Entrega / Residencial
+                  3. Endereço
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">CEP</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-[#50453a]">CEP</label>
+                      {loadingCep && (
+                        <span className="text-[10px] text-[#855300] flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Buscando...
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="text"
                       value={formData.zip_code}
-                      onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                      onChange={handleCepChange}
                       placeholder="00000-000"
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">Logradouro</label>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">Logradouro / Rua</label>
                     <input
                       type="text"
                       value={formData.street}
@@ -627,6 +617,28 @@ export default function PersonsList() {
                   </div>
 
                   <div>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">Complemento</label>
+                    <input
+                      type="text"
+                      value={formData.complement}
+                      onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
+                      placeholder="Apto 101"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">Bairro</label>
+                    <input
+                      type="text"
+                      value={formData.neighborhood}
+                      onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                      placeholder="Jardins"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-[#50453a] mb-1">Cidade</label>
                     <input
                       type="text"
@@ -638,29 +650,84 @@ export default function PersonsList() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#50453a] mb-1">UF (Estado)</label>
+                    <label className="block text-xs font-semibold text-[#50453a] mb-1">UF / Estado</label>
                     <input
                       type="text"
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                       placeholder="SP"
+                      maxLength={2}
                       className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white uppercase"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Seção 5: Observações */}
+              {/* Seção 4: Vínculo Inicial com Empresa (Apenas na criação) */}
+              {!editingPerson && availableCompanies.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#855300] mb-3">
+                    4. Vínculo Empresarial Inicial (Opcional)
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-[#f7ede5]/50 p-4 rounded-2xl border border-[#d4c3b5]">
+                    <div className="sm:col-span-3">
+                      <label className="block text-xs font-semibold text-[#50453a] mb-1">
+                        Empresa Onde Trabalha / Representa
+                      </label>
+                      <select
+                        value={formData.initial_company_id}
+                        onChange={(e) => setFormData({ ...formData, initial_company_id: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white font-medium"
+                      >
+                        <option value="">Não vincular a uma empresa agora (Pessoa Independente)</option>
+                        {availableCompanies.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.trade_name} {c.corporate_name ? `(${c.corporate_name})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {formData.initial_company_id && (
+                      <>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-semibold text-[#50453a] mb-1">Cargo / Função</label>
+                          <input
+                            type="text"
+                            value={formData.initial_role}
+                            onChange={(e) => setFormData({ ...formData, initial_role: e.target.value })}
+                            placeholder="Ex: Coordenadora de Eventos"
+                            className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] outline-none text-sm bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-[#50453a] mb-1">Departamento</label>
+                          <input
+                            type="text"
+                            value={formData.initial_department}
+                            onChange={(e) => setFormData({ ...formData, initial_department: e.target.value })}
+                            placeholder="Ex: Marketing"
+                            className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] outline-none text-sm bg-white"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Seção 5: Notas e Preferências */}
               <div>
                 <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                  Notas / Preferências de Biscoitos
+                  Notas / Preferências e Restrições
                 </label>
                 <textarea
                   rows="3"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Restrições (ex: sem glúten/lactose), sabores favoritos, observações..."
-                  className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white"
+                  placeholder="Restrições (ex: sem glúten/lactose), sabores favoritos de biscoitos, preferências de atendimento..."
+                  className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] focus:border-[#855300] outline-none text-sm bg-white resize-y"
                 />
               </div>
 
@@ -668,14 +735,14 @@ export default function PersonsList() {
                 <button
                   type="button"
                   onClick={() => setIsFormModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold text-[#50453a] hover:bg-[#f7ede5]"
+                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-[#50453a] hover:bg-[#f7ede5] cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 rounded-full bg-[#855300] hover:bg-[#6c4300] text-white text-sm font-semibold shadow-sm"
+                  className="px-6 py-2.5 rounded-full bg-[#855300] hover:bg-[#6c4300] text-white text-sm font-semibold shadow-sm cursor-pointer"
                 >
                   {saving ? 'Salvando...' : 'Salvar Pessoa'}
                 </button>
@@ -685,82 +752,141 @@ export default function PersonsList() {
         </div>
       )}
 
-      {/* Drawer / Modal de Detalhes da Pessoa (Ficha Completa + Empresas Vinculadas) */}
+      {/* VISÃO COMPLETA DA PESSOA (Full Overview + Empresas Vinculadas + Histórico CRM) */}
       {viewingPerson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-[#fff8f4] border border-[#d4c3b5] w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl m3-elevation-3 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between pb-4 border-b border-[#d4c3b5]">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#caeca0] text-[#496636] font-bold text-lg flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-[#fff8f4] border border-[#d4c3b5] w-full max-w-4xl rounded-3xl p-6 sm:p-8 shadow-2xl m3-elevation-3 my-4 max-h-[95vh] overflow-y-auto">
+            {/* Header da Visão Completa */}
+            <div className="flex items-start justify-between pb-5 border-b border-[#d4c3b5]">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#caeca0] text-[#496636] font-black text-2xl flex items-center justify-center shadow-xs">
                   {viewingPerson.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-[#211a14]">
-                    {viewingPerson.name}
-                  </h2>
-                  <p className="text-xs text-[#715b41]">
-                    {viewingPerson.type || 'Consumidor Final'} • CPF: {viewingPerson.cpf || 'Não informado'}
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-black text-[#211a14] tracking-tight">
+                      {viewingPerson.name}
+                    </h2>
+                    <span className="text-xs px-3 py-1 rounded-full bg-[#ffddb8] text-[#855300] font-bold">
+                      {viewingPerson.type || 'Consumidor Final'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#715b41] mt-0.5">
+                    CPF: {viewingPerson.cpf || 'Não informado'} • Cadastrado em {new Date(viewingPerson.created_at).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setViewingPerson(null)}
-                className="p-1.5 text-[#715b41] hover:text-[#211a14] rounded-full hover:bg-[#f7ede5]"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenEdit(viewingPerson)}
+                  className="p-2 rounded-xl text-[#715b41] hover:text-[#855300] hover:bg-[#ffddb8]/40 cursor-pointer"
+                  title="Editar Dados da Pessoa"
+                >
+                  <Edit2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewingPerson(null)}
+                  className="p-2 text-[#715b41] hover:text-[#211a14] rounded-full hover:bg-[#f7ede5] cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
 
+            {/* Conteúdo da Visão Completa */}
             <div className="mt-6 space-y-6">
-              {/* Contatos e Endereço */}
-              <div className="bg-white p-5 rounded-2xl border border-[#d4c3b5] grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="font-bold text-[#715b41] uppercase tracking-wider block mb-1">
-                    Canais de Comunicação
+              {/* Painel Informativo */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Canais de Comunicação */}
+                <div className="bg-white p-4 rounded-2xl border border-[#d4c3b5] shadow-xs space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#855300] flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5" /> Contato Direto
                   </span>
-                  <div className="space-y-1 text-sm text-[#211a14]">
-                    {viewingPerson.email && <div>E-mail: <strong className="text-[#855300]">{viewingPerson.email}</strong></div>}
-                    {viewingPerson.whatsapp && <div>WhatsApp: <strong>{viewingPerson.whatsapp}</strong></div>}
-                    {viewingPerson.birth_date && <div>Aniversário: <strong>{viewingPerson.birth_date}</strong></div>}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="font-bold text-[#715b41] uppercase tracking-wider block mb-1">
-                    Endereço
-                  </span>
-                  <div className="text-sm text-[#211a14]">
-                    {viewingPerson.city ? (
+                  <div className="text-xs text-[#211a14] space-y-1.5 pt-1">
+                    <div>
+                      <span className="font-semibold text-[#715b41]">Telefone:</span> {viewingPerson.phone || 'Não informado'}
+                    </div>
+                    {viewingPerson.whatsapp && (
                       <div>
-                        {viewingPerson.street && `${viewingPerson.street}, ${viewingPerson.number || 'S/N'}`}<br />
-                        {viewingPerson.city} - {viewingPerson.state} ({viewingPerson.zip_code || ''})
+                        <span className="font-semibold text-[#715b41]">WhatsApp:</span>{' '}
+                        <a
+                          href={`https://wa.me/55${viewingPerson.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-emerald-700 font-bold hover:underline"
+                        >
+                          {viewingPerson.whatsapp}
+                        </a>
                       </div>
-                    ) : (
-                      'Não informado'
+                    )}
+                    {viewingPerson.email && (
+                      <div className="break-all">
+                        <span className="font-semibold text-[#715b41]">E-mail:</span> {viewingPerson.email}
+                      </div>
+                    )}
+                    {viewingPerson.birth_date && (
+                      <div className="flex items-center gap-1.5 text-amber-800 font-semibold pt-1">
+                        <Cake className="w-3.5 h-3.5" />
+                        <span>Aniversário: {viewingPerson.birth_date}</span>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {viewingPerson.notes && (
-                  <div className="sm:col-span-2 pt-2 border-t border-[#f7ede5]">
-                    <span className="font-bold text-[#715b41] uppercase tracking-wider block mb-1">
-                      Preferências / Sabores
-                    </span>
-                    <p className="text-[#50453a] whitespace-pre-wrap">{viewingPerson.notes}</p>
+                {/* Endereço */}
+                <div className="bg-white p-4 rounded-2xl border border-[#d4c3b5] shadow-xs space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#855300] flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" /> Endereço Residencial/Entrega
+                  </span>
+                  <div className="text-xs text-[#211a14] pt-1">
+                    {viewingPerson.street || viewingPerson.city ? (
+                      <div className="space-y-1">
+                        <div className="font-semibold">
+                          {viewingPerson.street || ''} {viewingPerson.number ? `, ${viewingPerson.number}` : ''}
+                        </div>
+                        {viewingPerson.complement && <div className="text-[#715b41]">{viewingPerson.complement}</div>}
+                        <div className="text-[#50453a]">
+                          {viewingPerson.neighborhood && `${viewingPerson.neighborhood} • `}
+                          {viewingPerson.city} - {viewingPerson.state}
+                        </div>
+                        {viewingPerson.zip_code && (
+                          <div className="text-[11px] text-[#715b41]">CEP: {viewingPerson.zip_code}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[#715b41] italic">Endereço não cadastrado</span>
+                    )}
                   </div>
-                )}
+                </div>
+
+                {/* Preferências e Sabores de Biscoitos */}
+                <div className="bg-white p-4 rounded-2xl border border-[#d4c3b5] shadow-xs space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#855300] flex items-center gap-1.5">
+                    <Cake className="w-3.5 h-3.5" /> Preferências do Cliente
+                  </span>
+                  <div className="text-xs text-[#211a14] pt-1">
+                    {viewingPerson.notes ? (
+                      <p className="text-xs text-[#50453a] whitespace-pre-wrap leading-relaxed">
+                        {viewingPerson.notes}
+                      </p>
+                    ) : (
+                      <span className="text-[#715b41] italic">Nenhuma preferência ou restrição anotada.</span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {/* Relação de Empresas onde atua / Cargos */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
+              {/* Seção de Empresas Vinculadas */}
+              <div className="bg-[#fff8f4] border border-[#d4c3b5] rounded-3xl p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-base font-bold text-[#211a14] flex items-center gap-2">
                       <Building2 className="w-5 h-5 text-[#855300]" />
-                      Empresas Associadas & Cargos
+                      Empresas Associadas ({viewingPerson.companies?.length || 0})
                     </h3>
                     <p className="text-xs text-[#715b41]">
-                      Empresas com as quais {viewingPerson.name} mantém vínculo profissional
+                      Empresas onde esta pessoa atua como compradora, representante ou contato
                     </p>
                   </div>
 
@@ -773,66 +899,76 @@ export default function PersonsList() {
                   </button>
                 </div>
 
-                <div className="space-y-2">
+                {/* Lista de Vínculos da Pessoa */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {viewingPerson.companies && viewingPerson.companies.length > 0 ? (
-                    viewingPerson.companies.map((link) => (
+                    viewingPerson.companies.map((contact) => (
                       <div
-                        key={link.id}
-                        className="bg-white p-4 rounded-2xl border border-[#d4c3b5] flex items-center justify-between"
+                        key={contact.id}
+                        className="bg-white p-4 rounded-2xl border border-[#d4c3b5] flex items-center justify-between hover:shadow-xs transition-shadow"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#ffddb8] text-[#855300] flex items-center justify-center font-bold text-xs">
-                            <Building2 className="w-4 h-4" />
+                          <div className="w-10 h-10 rounded-full bg-[#ffddb8] text-[#855300] font-bold flex items-center justify-center text-xs">
+                            {contact.company?.trade_name?.charAt(0).toUpperCase() || 'E'}
                           </div>
                           <div>
                             <div className="font-semibold text-sm text-[#211a14] flex items-center gap-2">
-                              <span>{link.company?.trade_name}</span>
-                              {link.is_primary && (
+                              <span>{contact.company?.trade_name}</span>
+                              {contact.is_primary && (
                                 <span className="text-[10px] bg-[#caeca0] text-[#0b2000] px-2 py-0.5 rounded-full font-bold">
-                                  Contato Principal
+                                  Principal
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-[#715b41] flex items-center gap-2 mt-0.5">
-                              <span className="font-semibold text-[#855300]">
-                                {link.role || 'Cargo não especificado'}
+                            <div className="text-xs text-[#715b41] flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                              <span className="font-medium text-[#855300]">
+                                {contact.role || 'Cargo não especificado'}
                               </span>
-                              {link.department && <span>• {link.department}</span>}
-                              {link.company?.city && <span>• {link.company.city}</span>}
+                              {contact.department && <span>• {contact.department}</span>}
+                              {contact.company?.city && <span>• {contact.company.city}</span>}
                             </div>
                           </div>
                         </div>
 
                         <button
-                          onClick={() => handleRemoveCompanyLink(link.id)}
+                          onClick={() => handleRemoveCompanyLink(contact.id)}
                           title="Desassociar desta empresa"
-                          className="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-lg transition-colors"
+                          className="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-lg transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ))
                   ) : (
-                    <div className="bg-white p-6 rounded-2xl border border-[#d4c3b5] text-center text-xs text-[#715b41]">
-                      Esta pessoa não possui nenhuma empresa associada. Clique em "Associar Empresa" caso ela atue como contato corporativo ou representante.
+                    <div className="col-span-full bg-white p-6 rounded-2xl border border-dashed border-[#d4c3b5] text-center text-xs text-[#715b41]">
+                      Esta pessoa não está vinculada a nenhuma empresa. Caso passe a representar uma organização, clique em "Associar Empresa".
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Seção CRÍTICA: Histórico de Contatos e Anotações no CRM */}
+              <div className="bg-[#f7ede5]/60 border border-[#d4c3b5] rounded-3xl p-5 shadow-xs">
+                <InteractionsTimeline
+                  entityType="person"
+                  entityId={viewingPerson.id}
+                  contactPersonList={[viewingPerson]}
+                />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal M3 para associar empresa à pessoa */}
+      {/* Modal M3 para Associar Empresa à Pessoa */}
       {isAddCompanyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="bg-[#fff8f4] border border-[#d4c3b5] w-full max-w-md rounded-3xl p-6 shadow-2xl m3-elevation-3">
             <div className="flex items-center justify-between pb-3 border-b border-[#d4c3b5]">
               <h3 className="font-bold text-[#211a14] text-base">
-                Associar {viewingPerson?.name} a Empresa
+                Associar {viewingPerson?.name} a uma Empresa
               </h3>
-              <button onClick={() => setIsAddCompanyModalOpen(false)}>
+              <button onClick={() => setIsAddCompanyModalOpen(false)} className="cursor-pointer">
                 <X className="w-5 h-5 text-[#715b41]" />
               </button>
             </div>
@@ -852,25 +988,26 @@ export default function PersonsList() {
                   required
                   value={newCompanyLink.company_id}
                   onChange={(e) => setNewCompanyLink({ ...newCompanyLink, company_id: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] bg-white text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] bg-white text-sm outline-none font-medium"
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Selecione uma empresa...</option>
                   {availableCompanies.map((c) => (
-                    <option key={c.id} value={c.id}>{c.trade_name} ({c.city || 'Sem cidade'})</option>
+                    <option key={c.id} value={c.id}>
+                      {c.trade_name} {c.cnpj ? `(CNPJ: ${c.cnpj})` : ''}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[#50453a] mb-1">
-                  Cargo / Função que ocupa na Empresa *
+                  Cargo / Função nesta Empresa
                 </label>
                 <input
                   type="text"
-                  required
                   value={newCompanyLink.role}
                   onChange={(e) => setNewCompanyLink({ ...newCompanyLink, role: e.target.value })}
-                  placeholder="Ex: Diretor Geral, Comprador, Coordenador de Marketing"
+                  placeholder="Ex: Compradora Sênior, Diretora de RH"
                   className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] bg-white text-sm outline-none"
                 />
               </div>
@@ -883,7 +1020,7 @@ export default function PersonsList() {
                   type="text"
                   value={newCompanyLink.department}
                   onChange={(e) => setNewCompanyLink({ ...newCompanyLink, department: e.target.value })}
-                  placeholder="Ex: Suprimentos, Recursos Humanos"
+                  placeholder="Ex: Suprimentos, Gente & Gestão"
                   className="w-full px-4 py-2.5 rounded-2xl border border-[#827568] bg-white text-sm outline-none"
                 />
               </div>
@@ -891,29 +1028,29 @@ export default function PersonsList() {
               <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
-                  id="is_prim_pers"
+                  id="is_primary_company"
                   checked={newCompanyLink.is_primary}
                   onChange={(e) => setNewCompanyLink({ ...newCompanyLink, is_primary: e.target.checked })}
-                  className="w-4 h-4 text-[#855300] accent-[#855300] rounded"
+                  className="w-4 h-4 text-[#855300] rounded focus:ring-[#855300]"
                 />
-                <label htmlFor="is_prim_pers" className="text-xs font-medium text-[#211a14] cursor-pointer">
+                <label htmlFor="is_primary_company" className="text-xs text-[#211a14] font-medium cursor-pointer">
                   Definir como contato principal desta empresa
                 </label>
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-2 border-t border-[#d4c3b5]">
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#d4c3b5]">
                 <button
                   type="button"
                   onClick={() => setIsAddCompanyModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-semibold text-[#50453a]"
+                  className="px-4 py-2 rounded-full border border-[#827568] text-xs font-semibold cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#855300] hover:bg-[#6c4300] text-white text-xs font-semibold shadow-sm"
+                  className="px-5 py-2 rounded-full bg-[#855300] text-white text-xs font-bold shadow-sm cursor-pointer"
                 >
-                  Confirmar Associação
+                  Associar Empresa
                 </button>
               </div>
             </form>
@@ -921,28 +1058,26 @@ export default function PersonsList() {
         </div>
       )}
 
-      {/* Modal M3 de Confirmação de Exclusão */}
+      {/* Modal de Exclusão de Pessoa */}
       {deletingPerson && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-[#fff8f4] border border-[#d4c3b5] w-full max-w-sm rounded-3xl p-6 shadow-2xl m3-elevation-3 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-bold text-[#211a14]">Excluir Pessoa?</h3>
-            <p className="text-sm text-[#715b41] mt-2">
-              Tem certeza que deseja remover <strong>{deletingPerson.name}</strong>? Seus dados e vínculos com empresas serão excluídos.
+          <div className="bg-[#fff8f4] border border-[#d4c3b5] w-full max-w-sm rounded-3xl p-6 shadow-2xl m3-elevation-3">
+            <h3 className="font-bold text-lg text-[#ba1a1a] mb-2">Excluir Pessoa</h3>
+            <p className="text-xs text-[#50453a] mb-6">
+              Tem certeza que deseja remover <b>{deletingPerson.name}</b>?
+              Esta ação removerá todos os vínculos desta pessoa com empresas cadastradas.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-3">
+            <div className="flex justify-end gap-2">
               <button
                 onClick={() => setDeletingPerson(null)}
-                className="px-5 py-2.5 rounded-full text-sm font-semibold text-[#50453a] hover:bg-[#f7ede5]"
+                className="px-4 py-2 rounded-full border border-[#827568] text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-6 py-2.5 rounded-full bg-[#ba1a1a] hover:bg-[#93000a] text-white text-sm font-semibold shadow-sm"
+                className="px-5 py-2 rounded-full bg-[#ba1a1a] hover:bg-[#93000a] text-white text-xs font-bold cursor-pointer"
               >
                 {deleting ? 'Excluindo...' : 'Sim, Excluir'}
               </button>

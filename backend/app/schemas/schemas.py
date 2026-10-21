@@ -188,3 +188,24 @@ class PersonDetailResponse(PersonBase):
 
     class Config:
         from_attributes = True
+
+# CRM Interaction Schemas
+class CRMInteractionBase(BaseModel):
+    type: str = "Anotação"
+    description: str
+    contact_person: Optional[str] = None
+    date: Optional[datetime] = None
+
+class CRMInteractionCreate(CRMInteractionBase):
+    pass
+
+class CRMInteractionResponse(CRMInteractionBase):
+    id: int
+    entity_type: str
+    entity_id: int
+    created_by: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+

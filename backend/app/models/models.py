@@ -94,3 +94,18 @@ class CompanyContact(Base):
 
     company = relationship("Company", back_populates="contacts")
     person = relationship("Person", back_populates="companies")
+
+class CRMInteraction(Base):
+    __tablename__ = "crm_interactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    entity_type = Column(String(20), nullable=False) # "company" ou "person"
+    entity_id = Column(Integer, nullable=False, index=True)
+    type = Column(String(50), default="Anotação") # Anotação, Ligação, WhatsApp, Reunião, E-mail, Visita, Envio de Amostra, Proposta
+    description = Column(Text, nullable=False)
+    contact_person = Column(String(150), nullable=True) # Nome do interlocutor se aplicável
+    date = Column(DateTime, default=datetime.utcnow)
+    created_by = Column(String(150), nullable=True) # Nome do operador que registrou
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
