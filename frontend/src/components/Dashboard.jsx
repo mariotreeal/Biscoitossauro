@@ -103,20 +103,13 @@ export default function Dashboard({ metrics, onNavigate }) {
             </div>
           </div>
 
-          {/* Mascote e Logo Oficiais sem molduras */}
+          {/* Logo Oficial sem molduras */}
           <div className="hidden sm:flex items-center justify-center flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/logo.png" 
-                alt="Logo Biscoitossauro" 
-                className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
-              />
-              <img 
-                src="/mascot.png" 
-                alt="Mascote Biscoitossauro" 
-                className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
-              />
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Logo Biscoitossauro" 
+              className="w-40 h-40 md:w-52 md:h-52 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+            />
           </div>
         </div>
       </div>
