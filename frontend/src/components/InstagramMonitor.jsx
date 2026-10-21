@@ -54,7 +54,7 @@ export default function InstagramMonitor() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="w-10 h-10 border-3 border-[#e1306c] border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-sm font-semibold text-[#715b41]">Carregando métricas do Instagram @biscoitossauro...</p>
+        <p className="text-sm font-semibold text-[#715b41]">Carregando métricas do Instagram @biscoitossauros...</p>
       </div>
     );
   }
@@ -504,7 +504,7 @@ export default function InstagramMonitor() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Pré-requisitos para obter o Token da Meta:
             </p>
             <ol className="list-decimal list-inside space-y-1 pl-1">
-              <li>A conta <strong>@biscoitossauro</strong> precisa ser uma conta Profissional (Comercial ou Criador de Conteúdo).</li>
+              <li>A conta <strong>@biscoitossauros</strong> precisa ser uma conta Profissional (Comercial ou Criador de Conteúdo).</li>
               <li>A conta deve estar vinculada a uma Página do Facebook da Biscoitossauro.</li>
               <li>No portal <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" className="text-[#855300] font-bold underline">Meta for Developers</a>, crie um App do tipo "Business" e adicione o produto "Instagram Graph API".</li>
             </ol>
