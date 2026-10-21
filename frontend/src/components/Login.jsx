@@ -12,13 +12,33 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      setError('Por favor, informe seu e-mail de acesso.');
+      return;
+    }
+
+    if (!password) {
+      setError('Por favor, informe sua senha.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
+      await login(cleanEmail, password);
     } catch (err) {
-      setError(
-        err.response?.data?.detail || 'Erro ao realizar login. Verifique suas credenciais.'
-      );
+      if (err.response?.status === 401) {
+        setError(err.response?.data?.detail || 'E-mail ou senha incorretos.');
+      } else if (err.response?.status === 403) {
+        setError(err.response?.data?.detail || 'Sua conta de usuário está desativada.');
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (!err.response) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+      } else {
+        setError('Erro ao realizar login. Verifique suas credenciais.');
+      }
     } finally {
       setLoading(false);
     }
@@ -37,17 +57,12 @@ export default function Login() {
         <div className="bg-[#fff8f4] border border-[#d4c3b5] rounded-3xl p-8 sm:p-10 shadow-xl m3-elevation-2 backdrop-blur-sm">
           {/* Brand header */}
           <div className="text-center mb-8">
-            <div className="relative inline-block mb-3">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-3xl overflow-hidden shadow-lg border-2 border-[#ffddb8] bg-[#1a1410] flex items-center justify-center p-1 group hover:scale-105 transition-transform duration-300">
-                <img 
-                  src="/mascot.png" 
-                  alt="Mascote Biscoitossauro" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#caeca0] text-[#0b2000] shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" />
-              </span>
+            <div className="inline-block mb-3">
+              <img 
+                src="/mascot.png" 
+                alt="Mascote Biscoitossauro" 
+                className="w-28 h-28 sm:w-32 sm:h-32 mx-auto object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#211a14] tracking-tight">
               Biscoitossauro

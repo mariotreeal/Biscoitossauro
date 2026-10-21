@@ -50,23 +50,19 @@ export default function Dashboard({ metrics, onNavigate }) {
             </div>
           </div>
 
-          {/* Brand Logo & Mascot Showcase */}
+          {/* Brand Logo & Mascot Showcase (Sem molduras ou fundos) */}
           <div className="hidden sm:flex items-center justify-center flex-shrink-0">
-            <div className="relative group">
-              <div className="w-36 h-36 md:w-44 md:h-44 rounded-3xl overflow-hidden bg-[#1a1410] border-2 border-[#ffddb8] shadow-md group-hover:scale-105 transition-transform duration-300 p-1 flex items-center justify-center">
-                <img 
-                  src="/logo.png" 
-                  alt="Logo Biscoitossauro" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="absolute -bottom-2 -left-2 w-12 h-12 rounded-2xl bg-[#ffddb8] border-2 border-white shadow-md overflow-hidden p-0.5">
-                <img 
-                  src="/mascot.png" 
-                  alt="Mascote Biscoitossauro" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <img 
+                src="/logo.png" 
+                alt="Logo Biscoitossauro" 
+                className="w-36 h-36 md:w-44 md:h-44 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+              />
+              <img 
+                src="/mascot.png" 
+                alt="Mascote Biscoitossauro" 
+                className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+              />
             </div>
           </div>
         </div>

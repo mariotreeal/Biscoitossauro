@@ -89,13 +89,11 @@ export default function Sidebar({
         <div>
           <div className="h-20 flex items-center justify-between px-3 border-b border-[#d4c3b5]/60">
             <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handleNavClick('dashboard')}>
-              <div className="w-11 h-11 rounded-2xl bg-[#1a1410] border border-[#ffddb8]/50 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden p-0.5">
-                <img 
-                  src="/mascot.png" 
-                  alt="Biscoitossauro" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <img 
+                src="/mascot.png" 
+                alt="Biscoitossauro" 
+                className="w-11 h-11 object-contain flex-shrink-0"
+              />
               {(!isCollapsed || isMobileOpen) && (
                 <div className="truncate">
                   <div className="font-black text-[#211a14] tracking-tight leading-tight text-base flex items-center gap-1.5">

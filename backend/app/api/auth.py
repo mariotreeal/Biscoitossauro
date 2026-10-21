@@ -10,16 +10,25 @@ router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
 @router.post("/login", response_model=Token)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == data.email.lower().strip()).first()
-    if not user or not verify_password(data.password, user.hashed_password):
+    clean_email = data.email.lower().strip()
+    user = db.query(User).filter(User.email == clean_email).first()
+    
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="E-mail ou senha incorretos."
+            detail="Usuário não cadastrado. Verifique o e-mail informado."
         )
+    
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Senha incorreta. Por favor, tente novamente."
+        )
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Conta de usuário desativada."
+            detail="Conta de usuário inativa ou desativada pelo administrador."
         )
     
     access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
