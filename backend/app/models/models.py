@@ -105,7 +105,42 @@ class CRMInteraction(Base):
     description = Column(Text, nullable=False)
     contact_person = Column(String(150), nullable=True) # Nome do interlocutor se aplicável
     date = Column(DateTime, default=datetime.utcnow)
-    created_by = Column(String(150), nullable=True) # Nome do operador que registrou
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PipelineOpportunity(Base):
+    __tablename__ = "pipeline_opportunities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False) # Ex: Biscoitos Corporativos de Páscoa
+    description = Column(Text, nullable=True) # Detalhes da demanda, sabores, formato
+    stage = Column(String(50), nullable=False, default="novo lead", index=True) 
+    # Estágios permitidos: novo lead, qualificação, gerar proposta, proposta enviada, negociação, ganho, perdido
+
+    value = Column(Integer, default=0) # Valor em centavos ou unidades monetárias (ex: 150000 = R$ 1.500,00)
+    quantity = Column(Integer, nullable=True) # Quantidade estimada de biscoitos/kits
+    priority = Column(String(20), default="Média") # Baixa, Média, Alta, Urgente
+    customer_type = Column(String(20), default="B2B") # B2B ou B2C
+    
+    # Vínculos opcionais com o CRM existente
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="SET NULL"), nullable=True)
+    person_id = Column(Integer, ForeignKey("persons.id", ondelete="SET NULL"), nullable=True)
+    
+    # Contato rápido caso ainda seja um lead frio
+    contact_name = Column(String(150), nullable=True)
+    contact_email = Column(String(150), nullable=True)
+    contact_phone = Column(String(30), nullable=True)
+
+    source = Column(String(50), nullable=True) # Instagram, WhatsApp, Indicação, Evento, Site
+    expected_closing_date = Column(String(20), nullable=True) # YYYY-MM-DD
+    event_date = Column(String(20), nullable=True) # Data do evento/entrega
+    loss_reason = Column(String(200), nullable=True) # Motivo se perdido
+    assigned_to = Column(String(150), nullable=True) # Responsável pelo lead
+
+    order_index = Column(Integer, default=0) # Posição no kanban
 
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    company = relationship("Company")
+    person = relationship("Person")
 

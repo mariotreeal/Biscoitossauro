@@ -9,7 +9,8 @@ import {
   ChevronLeft, 
   ChevronRight, 
   X,
-  Layers
+  Layers,
+  Kanban
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,6 +30,12 @@ export default function Sidebar({
       label: 'Visão Geral',
       icon: LayoutDashboard,
       category: 'Geral'
+    },
+    {
+      id: 'pipeline',
+      label: 'Funil Comercial',
+      icon: Kanban,
+      category: 'Comercial'
     },
     {
       id: 'companies',

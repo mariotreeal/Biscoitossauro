@@ -7,7 +7,8 @@ import {
   TrendingUp, 
   Clock, 
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  Kanban
 } from 'lucide-react';
 
 export default function Dashboard({ metrics, onNavigate }) {
@@ -29,16 +30,22 @@ export default function Dashboard({ metrics, onNavigate }) {
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <button 
-                onClick={() => onNavigate('companies')}
+                onClick={() => onNavigate('pipeline')}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#855300] text-white text-xs font-bold hover:bg-[#6c4300] transition-colors shadow-sm"
               >
-                <Building2 className="w-3.5 h-3.5" /> Ver Empresas
+                <Kanban className="w-3.5 h-3.5" /> Abrir Funil Comercial
+              </button>
+              <button 
+                onClick={() => onNavigate('companies')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#d4c3b5] text-[#211a14] text-xs font-bold hover:bg-[#fff8f4] transition-colors"
+              >
+                <Building2 className="w-3.5 h-3.5" /> Empresas
               </button>
               <button 
                 onClick={() => onNavigate('persons')}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#d4c3b5] text-[#211a14] text-xs font-bold hover:bg-[#fff8f4] transition-colors"
               >
-                <Users className="w-3.5 h-3.5" /> Ver Contatos
+                <Users className="w-3.5 h-3.5" /> Contatos
               </button>
             </div>
           </div>

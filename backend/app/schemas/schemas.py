@@ -209,3 +209,63 @@ class CRMInteractionResponse(CRMInteractionBase):
     class Config:
         from_attributes = True
 
+# Funil Comercial / Pipeline Opportunity Schemas
+class PipelineOpportunityBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    stage: str = "novo lead"
+    value: int = 0
+    quantity: Optional[int] = None
+    priority: str = "Média"
+    customer_type: str = "B2B"
+    company_id: Optional[int] = None
+    person_id: Optional[int] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    source: Optional[str] = None
+    expected_closing_date: Optional[str] = None
+    event_date: Optional[str] = None
+    loss_reason: Optional[str] = None
+    assigned_to: Optional[str] = None
+    order_index: int = 0
+
+class PipelineOpportunityCreate(PipelineOpportunityBase):
+    pass
+
+class PipelineOpportunityUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    stage: Optional[str] = None
+    value: Optional[int] = None
+    quantity: Optional[int] = None
+    priority: Optional[str] = None
+    customer_type: Optional[str] = None
+    company_id: Optional[int] = None
+    person_id: Optional[int] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    source: Optional[str] = None
+    expected_closing_date: Optional[str] = None
+    event_date: Optional[str] = None
+    loss_reason: Optional[str] = None
+    assigned_to: Optional[str] = None
+    order_index: Optional[int] = None
+
+class PipelineOpportunityResponse(PipelineOpportunityBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    company: Optional[CompanySummary] = None
+    person: Optional[PersonSummary] = None
+
+    class Config:
+        from_attributes = True
+
+class OpportunityStageUpdate(BaseModel):
+    stage: str
+    order_index: Optional[int] = None
+    loss_reason: Optional[str] = None
+
+

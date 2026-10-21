@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import CompaniesList from './components/CompaniesList';
 import PersonsList from './components/PersonsList';
 import UsersList from './components/UsersList';
+import PipelineKanban from './components/PipelineKanban';
 import api from './services/api';
 import { Menu, Bell, Sparkles } from 'lucide-react';
 
@@ -80,6 +81,8 @@ export default function App() {
               <span className="text-xs font-semibold uppercase tracking-wider text-[#715b41]">
                 {currentView === 'dashboard'
                   ? 'Painel Geral'
+                  : currentView === 'pipeline'
+                  ? 'Comercial • Pipeline de Vendas'
                   : currentView === 'companies'
                   ? 'CRM • Clientes & Parceiros'
                   : currentView === 'persons'
@@ -89,6 +92,8 @@ export default function App() {
               <h2 className="text-lg font-bold text-[#211a14] capitalize">
                 {currentView === 'dashboard'
                   ? 'Visão Geral'
+                  : currentView === 'pipeline'
+                  ? 'Funil Comercial'
                   : currentView === 'companies'
                   ? 'Empresas'
                   : currentView === 'persons'
@@ -111,6 +116,7 @@ export default function App() {
           {currentView === 'dashboard' && (
             <Dashboard metrics={metrics} onNavigate={(view) => setCurrentView(view)} />
           )}
+          {currentView === 'pipeline' && <PipelineKanban />}
           {currentView === 'companies' && <CompaniesList />}
           {currentView === 'persons' && <PersonsList />}
           {currentView === 'users' && <UsersList />}
