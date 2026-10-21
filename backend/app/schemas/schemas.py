@@ -268,4 +268,88 @@ class OpportunityStageUpdate(BaseModel):
     order_index: Optional[int] = None
     loss_reason: Optional[str] = None
 
+# Order / Módulo de Pedidos Schemas
+class OrderHistoryResponse(BaseModel):
+    id: int
+    order_id: int
+    from_status: Optional[str] = None
+    to_status: str
+    notes: Optional[str] = None
+    changed_by: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class OrderBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    status: str = "aprovado"
+    customer_type: str = "B2B"
+    priority: str = "Média"
+    company_id: Optional[int] = None
+    person_id: Optional[int] = None
+    contact_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    opportunity_id: Optional[int] = None
+    quantity: int = 1
+    total_value: int = 0
+    payment_method: Optional[str] = None
+    payment_status: str = "Pendente"
+    order_date: Optional[str] = None
+    production_date: Optional[str] = None
+    delivery_date: Optional[str] = None
+    resources_notes: Optional[str] = None
+    production_notes: Optional[str] = None
+    packaging_notes: Optional[str] = None
+    delivery_notes: Optional[str] = None
+    billing_notes: Optional[str] = None
+
+class OrderCreate(OrderBase):
+    pass
+
+class OrderUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    customer_type: Optional[str] = None
+    priority: Optional[str] = None
+    company_id: Optional[int] = None
+    person_id: Optional[int] = None
+    contact_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    opportunity_id: Optional[int] = None
+    quantity: Optional[int] = None
+    total_value: Optional[int] = None
+    payment_method: Optional[str] = None
+    payment_status: Optional[str] = None
+    order_date: Optional[str] = None
+    production_date: Optional[str] = None
+    delivery_date: Optional[str] = None
+    resources_notes: Optional[str] = None
+    production_notes: Optional[str] = None
+    packaging_notes: Optional[str] = None
+    delivery_notes: Optional[str] = None
+    billing_notes: Optional[str] = None
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+class OrderResponse(OrderBase):
+    id: int
+    order_number: str
+    created_at: datetime
+    updated_at: datetime
+    finished_at: Optional[datetime] = None
+    company: Optional[CompanySummary] = None
+    person: Optional[PersonSummary] = None
+    history: List[OrderHistoryResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
 

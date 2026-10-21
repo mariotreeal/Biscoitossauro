@@ -10,7 +10,8 @@ import {
   ChevronRight, 
   X,
   Layers,
-  Kanban
+  Kanban,
+  ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,6 +37,12 @@ export default function Sidebar({
       label: 'Funil Comercial',
       icon: Kanban,
       category: 'Comercial'
+    },
+    {
+      id: 'orders',
+      label: 'Pedidos & Produção',
+      icon: ShoppingBag,
+      category: 'Operações'
     },
     {
       id: 'companies',

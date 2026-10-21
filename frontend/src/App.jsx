@@ -7,6 +7,7 @@ import CompaniesList from './components/CompaniesList';
 import PersonsList from './components/PersonsList';
 import UsersList from './components/UsersList';
 import PipelineKanban from './components/PipelineKanban';
+import OrdersList from './components/OrdersList';
 import api from './services/api';
 import { Menu, Bell, Sparkles } from 'lucide-react';
 
@@ -83,6 +84,8 @@ export default function App() {
                   ? 'Painel Geral'
                   : currentView === 'pipeline'
                   ? 'Comercial • Pipeline de Vendas'
+                  : currentView === 'orders'
+                  ? 'Operações • Pedidos & Produção'
                   : currentView === 'companies'
                   ? 'CRM • Clientes & Parceiros'
                   : currentView === 'persons'
@@ -94,6 +97,8 @@ export default function App() {
                   ? 'Visão Geral'
                   : currentView === 'pipeline'
                   ? 'Funil Comercial'
+                  : currentView === 'orders'
+                  ? 'Pedidos & Produção'
                   : currentView === 'companies'
                   ? 'Empresas'
                   : currentView === 'persons'
@@ -117,6 +122,7 @@ export default function App() {
             <Dashboard metrics={metrics} onNavigate={(view) => setCurrentView(view)} />
           )}
           {currentView === 'pipeline' && <PipelineKanban />}
+          {currentView === 'orders' && <OrdersList />}
           {currentView === 'companies' && <CompaniesList />}
           {currentView === 'persons' && <PersonsList />}
           {currentView === 'users' && <UsersList />}

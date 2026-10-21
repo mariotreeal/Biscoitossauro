@@ -144,3 +144,69 @@ class PipelineOpportunity(Base):
     company = relationship("Company")
     person = relationship("Person")
 
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_number = Column(String(50), unique=True, index=True, nullable=False) # Ex: PED-2026-0001
+    title = Column(String(200), nullable=False) # Ex: 500 Biscoitos Decorados Natal
+    description = Column(Text, nullable=True) # Sabores, arte, cortadores, personalização
+
+    # Estágios do ciclo de pedidos da fábrica de biscoitos:
+    # 'aprovado', 'provisao_recursos', 'linha_producao', 'embalagem', 'entrega', 'faturamento', 'concluido', 'cancelado'
+    status = Column(String(50), nullable=False, default="aprovado", index=True)
+
+    customer_type = Column(String(20), default="B2B") # B2B ou B2C
+    priority = Column(String(20), default="Média") # Baixa, Média, Alta, Urgente
+
+    # Vínculo opcional com Empresa ou Pessoa
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="SET NULL"), nullable=True)
+    person_id = Column(Integer, ForeignKey("persons.id", ondelete="SET NULL"), nullable=True)
+    contact_name = Column(String(150), nullable=True)
+    contact_phone = Column(String(30), nullable=True)
+    contact_email = Column(String(150), nullable=True)
+
+    # Vínculo opcional com a oportunidade de origem do Funil Comercial
+    opportunity_id = Column(Integer, ForeignKey("pipeline_opportunities.id", ondelete="SET NULL"), nullable=True)
+
+    # Detalhes quantitativos e financeiros
+    quantity = Column(Integer, default=1) # Qtd de biscoitos / kits
+    total_value = Column(Integer, default=0) # Valor em centavos (ex: 150000 = R$ 1.500,00)
+    payment_method = Column(String(50), nullable=True) # Pix, Boleto, Cartão, Faturado 30 dias
+    payment_status = Column(String(50), default="Pendente") # Pendente, Parcial (50%), Pago, Faturado
+
+    # Prazos e Datas Chave
+    order_date = Column(String(20), nullable=True) # Data aprovação (YYYY-MM-DD)
+    production_date = Column(String(20), nullable=True) # Data início produção
+    delivery_date = Column(String(20), nullable=True) # Data prometida de entrega / evento
+    finished_at = Column(DateTime, nullable=True) # Data de conclusão efetiva
+
+    # Checklist / Anotações de cada fase de produção do biscoito
+    resources_notes = Column(Text, nullable=True) # Farinha especial, manteiga, cortador 3D, tags, fita
+    production_notes = Column(Text, nullable=True) # Lote de massa, forno, confeitagem / glacê real
+    packaging_notes = Column(Text, nullable=True) # Saquinho celofane, laço de cetim, caixa personalizada
+    delivery_notes = Column(Text, nullable=True) # Retirada no ateliê, motoboy, transportadora, rastreio
+    billing_notes = Column(Text, nullable=True) # NF-e emitida, chave da nota, dados bancários
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    company = relationship("Company")
+    person = relationship("Person")
+    opportunity = relationship("PipelineOpportunity")
+    history = relationship("OrderHistory", back_populates="order", cascade="all, delete-orphan", order_by="OrderHistory.created_at.desc()")
+
+class OrderHistory(Base):
+    __tablename__ = "order_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    from_status = Column(String(50), nullable=True)
+    to_status = Column(String(50), nullable=False)
+    notes = Column(Text, nullable=True)
+    changed_by = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    order = relationship("Order", back_populates="history")
+
+

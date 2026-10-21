@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.database import Base, engine, SessionLocal
 from backend.app.core.security import get_password_hash
 from backend.app.models.models import User
-from backend.app.api import auth, users, companies, persons, dashboard, interactions, pipeline
+from backend.app.api import auth, users, companies, persons, dashboard, interactions, pipeline, orders
 
 # Cria as tabelas do banco de dados
 Base.metadata.create_all(bind=engine)
@@ -51,6 +51,7 @@ app.include_router(persons.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(interactions.router, prefix="/api")
 app.include_router(pipeline.router, prefix="/api")
+app.include_router(orders.router, prefix="/api")
 
 @app.get("/api/health")
 def health():
