@@ -13,6 +13,7 @@ import {
   Kanban,
   ShoppingBag
 } from 'lucide-react';
+import InstagramIcon from './InstagramIcon';
 import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({
@@ -36,6 +37,12 @@ export default function Sidebar({
       id: 'pipeline',
       label: 'Funil Comercial',
       icon: Kanban,
+      category: 'Comercial'
+    },
+    {
+      id: 'instagram',
+      label: 'Instagram',
+      icon: InstagramIcon,
       category: 'Comercial'
     },
     {

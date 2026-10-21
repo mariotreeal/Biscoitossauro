@@ -8,6 +8,7 @@ import PersonsList from './components/PersonsList';
 import UsersList from './components/UsersList';
 import PipelineKanban from './components/PipelineKanban';
 import OrdersList from './components/OrdersList';
+import InstagramMonitor from './components/InstagramMonitor';
 import api from './services/api';
 import { Menu, Bell, Sparkles } from 'lucide-react';
 
@@ -84,6 +85,8 @@ export default function App() {
                   ? 'Painel Geral'
                   : currentView === 'pipeline'
                   ? 'Comercial • Pipeline de Vendas'
+                  : currentView === 'instagram'
+                  ? 'Marketing • Instagram Analytics'
                   : currentView === 'orders'
                   ? 'Operações • Pedidos & Produção'
                   : currentView === 'companies'
@@ -97,6 +100,8 @@ export default function App() {
                   ? 'Visão Geral'
                   : currentView === 'pipeline'
                   ? 'Funil Comercial'
+                  : currentView === 'instagram'
+                  ? 'Monitor do Instagram'
                   : currentView === 'orders'
                   ? 'Pedidos & Produção'
                   : currentView === 'companies'
@@ -122,6 +127,7 @@ export default function App() {
             <Dashboard metrics={metrics} onNavigate={(view) => setCurrentView(view)} />
           )}
           {currentView === 'pipeline' && <PipelineKanban />}
+          {currentView === 'instagram' && <InstagramMonitor />}
           {currentView === 'orders' && <OrdersList />}
           {currentView === 'companies' && <CompaniesList />}
           {currentView === 'persons' && <PersonsList />}

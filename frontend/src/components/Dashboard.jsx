@@ -20,6 +20,7 @@ import {
   Flame,
   FileCheck
 } from 'lucide-react';
+import InstagramIcon from './InstagramIcon';
 
 export default function Dashboard({ metrics, onNavigate }) {
   // Formatadores
@@ -87,6 +88,12 @@ export default function Dashboard({ metrics, onNavigate }) {
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#50453a] text-white text-xs font-bold hover:bg-[#382f25] transition-colors shadow-sm"
               >
                 <Kanban className="w-4 h-4" /> Funil Comercial
+              </button>
+              <button 
+                onClick={() => onNavigate('instagram')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#833ab4] to-[#fd1d1d] text-white text-xs font-bold hover:opacity-90 transition-opacity shadow-sm"
+              >
+                <InstagramIcon className="w-4 h-4" /> Instagram Analytics
               </button>
               <button 
                 onClick={() => onNavigate('companies')}
