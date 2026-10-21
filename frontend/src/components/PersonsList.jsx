@@ -21,7 +21,9 @@ import {
   Building,
   Loader2,
   Cake,
-  ExternalLink
+  ExternalLink,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 export default function PersonsList() {
@@ -29,6 +31,7 @@ export default function PersonsList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'list'
 
   // Modais
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -323,23 +326,51 @@ export default function PersonsList() {
             <option value="Parceiro">Parceiro</option>
           </select>
         </div>
+
+        {/* Botões de Alternância de Visualização: Cards vs Lista */}
+        <div className="flex items-center bg-white rounded-2xl p-1 border border-[#d4c3b5] shadow-xs">
+          <button
+            onClick={() => setViewMode('cards')}
+            title="Visualização em Cards"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'cards'
+                ? 'bg-[#855300] text-white shadow-xs'
+                : 'text-[#715b41] hover:text-[#211a14] hover:bg-[#ffddb8]/20'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden md:inline">Cards</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            title="Visualização em Lista"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'list'
+                ? 'bg-[#855300] text-white shadow-xs'
+                : 'text-[#715b41] hover:text-[#211a14] hover:bg-[#ffddb8]/20'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden md:inline">Lista</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid de Cards de Pessoas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {loading ? (
-          <div className="col-span-full text-center py-12 text-[#715b41]">
-            <div className="inline-block w-7 h-7 border-3 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
-            <div>Carregando pessoas...</div>
-          </div>
-        ) : persons.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-[#d4c3b5]">
-            <Users className="w-10 h-10 text-[#d4c3b5] mx-auto mb-2" />
-            <p className="text-sm font-semibold text-[#50453a]">Nenhuma pessoa encontrada.</p>
-            <p className="text-xs text-[#715b41] mt-1">Clique em "Nova Pessoa" para iniciar o cadastro.</p>
-          </div>
-        ) : (
-          persons.map((p) => (
+      {/* Exibição: Cards ou Lista */}
+      {loading ? (
+        <div className="text-center py-12 text-[#715b41]">
+          <div className="inline-block w-7 h-7 border-3 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
+          <div>Carregando pessoas...</div>
+        </div>
+      ) : persons.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-3xl border border-[#d4c3b5]">
+          <Users className="w-10 h-10 text-[#d4c3b5] mx-auto mb-2" />
+          <p className="text-sm font-semibold text-[#50453a]">Nenhuma pessoa encontrada.</p>
+          <p className="text-xs text-[#715b41] mt-1">Clique em "Nova Pessoa" para iniciar o cadastro.</p>
+        </div>
+      ) : viewMode === 'cards' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {persons.map((p) => (
             <div
               key={p.id}
               className="bg-white rounded-3xl border border-[#d4c3b5] p-5 hover:border-[#855300]/50 transition-all shadow-xs hover:shadow-md flex flex-col justify-between"
@@ -438,9 +469,103 @@ export default function PersonsList() {
                 </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Modo Lista / Tabela */
+        <div className="bg-white rounded-3xl border border-[#d4c3b5] overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#f7ede5] text-[#50453a] border-b border-[#d4c3b5] font-bold">
+                  <th className="py-3.5 px-4">Nome</th>
+                  <th className="py-3.5 px-4">Tipo</th>
+                  <th className="py-3.5 px-4">Contato</th>
+                  <th className="py-3.5 px-4">Localização</th>
+                  <th className="py-3.5 px-4">Empresa Vinculada</th>
+                  <th className="py-3.5 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f7ede5]">
+                {persons.map((p) => (
+                  <tr key={p.id} className="hover:bg-[#fffaf6] transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#caeca0] text-[#496636] flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div
+                            onClick={() => setViewingPerson(p)}
+                            className="font-bold text-[#211a14] hover:text-[#855300] cursor-pointer text-sm"
+                          >
+                            {p.name}
+                          </div>
+                          {p.cpf && (
+                            <div className="text-[11px] font-mono text-[#715b41]">
+                              CPF: {p.cpf}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-[11px] bg-[#f7ede5] px-2 py-0.5 rounded-md text-[#50453a] font-semibold border border-[#d4c3b5]">
+                        {p.type || 'Consumidor'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-[#50453a]">
+                      <div>{p.phone || '—'}</div>
+                      {p.email && <div className="text-[11px] text-[#715b41] truncate max-w-xs">{p.email}</div>}
+                    </td>
+                    <td className="py-3 px-4 text-[#50453a]">
+                      {p.city ? `${p.city} - ${p.state}` : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-[#50453a]">
+                      {p.companies && p.companies.length > 0 ? (
+                        <div className="font-medium text-[#211a14] flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
+                          <span className="truncate max-w-[200px]">
+                            {p.companies[0].company?.trade_name}
+                            {p.companies[0].role && ` (${p.companies[0].role})`}
+                            {p.companies.length > 1 && ` +${p.companies.length - 1}`}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Nenhuma</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewingPerson(p)}
+                          className="px-2.5 py-1 text-xs font-bold text-[#855300] hover:bg-[#ffddb8]/30 rounded-lg cursor-pointer"
+                        >
+                          Ver
+                        </button>
+                        <button
+                          onClick={() => handleOpenEdit(p)}
+                          title="Editar"
+                          className="p-1.5 rounded-lg text-[#715b41] hover:text-[#855300] hover:bg-[#ffddb8]/40 cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingPerson(p)}
+                          title="Excluir"
+                          className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6]/40 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Modal M3 de Criação / Edição de Pessoa */}
       {isFormModalOpen && (

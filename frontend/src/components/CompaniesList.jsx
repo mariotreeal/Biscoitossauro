@@ -22,7 +22,9 @@ import {
   Globe,
   FileText,
   Loader2,
-  Calendar
+  Calendar,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 const DEFAULT_SEGMENTS = [
@@ -40,6 +42,7 @@ export default function CompaniesList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [segmentFilter, setSegmentFilter] = useState('');
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'list'
 
   // Segmentos disponíveis
   const [segmentsList, setSegmentsList] = useState(DEFAULT_SEGMENTS);
@@ -319,7 +322,7 @@ export default function CompaniesList() {
         </button>
       </div>
 
-      {/* Barra de Filtro e Busca */}
+      {/* Barra de Filtro e Busca + Alternador de Visualização */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="flex-1 bg-white rounded-2xl p-2 border border-[#d4c3b5] flex items-center gap-2 shadow-xs">
           <Search className="w-5 h-5 text-[#715b41] ml-2 flex-shrink-0" />
@@ -353,23 +356,51 @@ export default function CompaniesList() {
             ))}
           </select>
         </div>
+
+        {/* Botões de Alternância de Visualização: Cards vs Lista */}
+        <div className="flex items-center bg-white rounded-2xl p-1 border border-[#d4c3b5] shadow-xs">
+          <button
+            onClick={() => setViewMode('cards')}
+            title="Visualização em Cards"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'cards'
+                ? 'bg-[#855300] text-white shadow-xs'
+                : 'text-[#715b41] hover:text-[#211a14] hover:bg-[#ffddb8]/20'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden md:inline">Cards</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            title="Visualização em Lista"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'list'
+                ? 'bg-[#855300] text-white shadow-xs'
+                : 'text-[#715b41] hover:text-[#211a14] hover:bg-[#ffddb8]/20'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden md:inline">Lista</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid de Cards de Empresas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {loading ? (
-          <div className="col-span-full text-center py-12 text-[#715b41]">
-            <div className="inline-block w-7 h-7 border-3 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
-            <div>Carregando empresas...</div>
-          </div>
-        ) : companies.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-[#d4c3b5]">
-            <Building2 className="w-10 h-10 text-[#d4c3b5] mx-auto mb-2" />
-            <p className="text-sm font-semibold text-[#50453a]">Nenhuma empresa encontrada.</p>
-            <p className="text-xs text-[#715b41] mt-1">Clique em "Nova Empresa" para iniciar o cadastro.</p>
-          </div>
-        ) : (
-          companies.map((comp) => (
+      {/* Exibição: Cards ou Lista */}
+      {loading ? (
+        <div className="text-center py-12 text-[#715b41]">
+          <div className="inline-block w-7 h-7 border-3 border-[#855300] border-t-transparent rounded-full animate-spin mb-2" />
+          <div>Carregando empresas...</div>
+        </div>
+      ) : companies.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-3xl border border-[#d4c3b5]">
+          <Building2 className="w-10 h-10 text-[#d4c3b5] mx-auto mb-2" />
+          <p className="text-sm font-semibold text-[#50453a]">Nenhuma empresa encontrada.</p>
+          <p className="text-xs text-[#715b41] mt-1">Clique em "Nova Empresa" para iniciar o cadastro.</p>
+        </div>
+      ) : viewMode === 'cards' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {companies.map((comp) => (
             <div
               key={comp.id}
               className="bg-white rounded-3xl border border-[#d4c3b5] p-5 hover:border-[#855300]/50 transition-all shadow-xs hover:shadow-md flex flex-col justify-between"
@@ -462,9 +493,102 @@ export default function CompaniesList() {
                 </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Modo Lista / Tabela */
+        <div className="bg-white rounded-3xl border border-[#d4c3b5] overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#f7ede5] text-[#50453a] border-b border-[#d4c3b5] font-bold">
+                  <th className="py-3.5 px-4">Empresa</th>
+                  <th className="py-3.5 px-4">CNPJ</th>
+                  <th className="py-3.5 px-4">Segmento</th>
+                  <th className="py-3.5 px-4">Localização</th>
+                  <th className="py-3.5 px-4">Telefone</th>
+                  <th className="py-3.5 px-4 text-center">Pessoas</th>
+                  <th className="py-3.5 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f7ede5]">
+                {companies.map((comp) => (
+                  <tr key={comp.id} className="hover:bg-[#fffaf6] transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#ffddb8] text-[#855300] flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {comp.trade_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div
+                            onClick={() => setViewingCompany(comp)}
+                            className="font-bold text-[#211a14] hover:text-[#855300] cursor-pointer text-sm"
+                          >
+                            {comp.trade_name}
+                          </div>
+                          {comp.corporate_name && (
+                            <div className="text-[11px] text-[#715b41] truncate max-w-xs">
+                              {comp.corporate_name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-[#715b41]">
+                      {comp.cnpj || '—'}
+                    </td>
+                    <td className="py-3 px-4">
+                      {comp.segment ? (
+                        <span className="text-[11px] bg-[#ffddb8]/60 px-2 py-0.5 rounded-md text-[#855300] font-semibold">
+                          {comp.segment}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-[#50453a]">
+                      {comp.city ? `${comp.city} - ${comp.state}` : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-[#50453a]">
+                      {comp.phone || '—'}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="inline-flex items-center gap-1 font-semibold text-[#855300] bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        <Users className="w-3 h-3" />
+                        {comp.contacts?.length || 0}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewingCompany(comp)}
+                          className="px-2.5 py-1 text-xs font-bold text-[#855300] hover:bg-[#ffddb8]/30 rounded-lg cursor-pointer"
+                        >
+                          Ver
+                        </button>
+                        <button
+                          onClick={() => handleOpenEdit(comp)}
+                          title="Editar"
+                          className="p-1.5 rounded-lg text-[#715b41] hover:text-[#855300] hover:bg-[#ffddb8]/40 cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingCompany(comp)}
+                          title="Excluir"
+                          className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6]/40 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Modal M3 de Criação / Edição de Empresa */}
       {isFormModalOpen && (

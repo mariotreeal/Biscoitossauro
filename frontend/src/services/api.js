@@ -17,7 +17,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // Apenas redireciona no 401 se NÃO for a própria requisição de login
+    const isLoginRequest = error.config && error.config.url && error.config.url.includes('/auth/login');
+    if (error.response && error.response.status === 401 && !isLoginRequest) {
       localStorage.removeItem('biscoitossauro_token');
       localStorage.removeItem('biscoitossauro_user');
       if (window.location.pathname !== '/login') {

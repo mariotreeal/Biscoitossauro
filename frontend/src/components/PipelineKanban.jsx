@@ -402,83 +402,77 @@ export default function PipelineKanban() {
                         draggedOppId === opp.id ? 'opacity-50 border-dashed border-[#855300]' : ''
                       }`}
                     >
-                      {/* Topo do Card: Tipo & Prioridade */}
+                      {/* Topo do Card: Tipo & Prioridade com destaque */}
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                          opp.customer_type === 'B2B' ? 'bg-amber-100 text-amber-900' : 'bg-teal-100 text-teal-900'
+                        <span className={`text-[11px] font-black tracking-wide px-2.5 py-1 rounded-lg shadow-xs border ${
+                          opp.customer_type === 'B2B' 
+                            ? 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400/40' 
+                            : 'bg-emerald-100 text-emerald-950 border-emerald-300 ring-1 ring-emerald-400/40'
                         }`}>
                           {opp.customer_type}
                         </span>
 
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                          opp.priority === 'Urgente' ? 'bg-red-100 text-red-700 font-extrabold' :
-                          opp.priority === 'Alta' ? 'bg-orange-100 text-orange-700' :
-                          opp.priority === 'Baixa' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700'
+                        <span className={`text-[11px] font-black tracking-wide px-2.5 py-1 rounded-lg shadow-xs border ${
+                          opp.priority === 'Urgente' 
+                            ? 'bg-red-500 text-white border-red-600 animate-pulse' :
+                          opp.priority === 'Alta' 
+                            ? 'bg-orange-500 text-white border-orange-600' :
+                          opp.priority === 'Baixa' 
+                            ? 'bg-gray-100 text-gray-700 border-gray-300' 
+                            : 'bg-blue-500 text-white border-blue-600'
                         }`}>
                           {opp.priority}
                         </span>
                       </div>
 
-                      {/* Título & Descrição */}
+                      {/* Título */}
                       <h4 
                         onClick={() => openEditModal(opp)}
                         className="font-bold text-[#211a14] text-sm leading-snug line-clamp-2 hover:text-[#855300] cursor-pointer"
+                        title={opp.title}
                       >
                         {opp.title}
                       </h4>
 
+                      {/* Descrição com limite de caracteres */}
                       {opp.description && (
-                        <p className="text-xs text-[#715b41] mt-1 line-clamp-2">
+                        <p className="text-xs text-[#715b41] mt-1.5 line-clamp-2" title={opp.description}>
                           {opp.description}
                         </p>
                       )}
 
-                      {/* Detalhes de Empresa / Pessoa / Contato */}
-                      <div className="mt-3 pt-2.5 border-t border-[#f2e6dc] space-y-1 text-xs text-[#50453a]">
+                      {/* Informações simples: Nome, Empresa, Pessoa, Quantidade */}
+                      <div className="mt-3 pt-2.5 border-t border-[#f2e6dc] space-y-1.5 text-xs text-[#50453a]">
+                        {opp.contact_name && (
+                          <div className="flex items-center gap-1.5 font-medium truncate">
+                            <User className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
+                            <span className="truncate"><strong>Nome:</strong> {opp.contact_name}</span>
+                          </div>
+                        )}
                         {opp.company && (
                           <div className="flex items-center gap-1.5 font-medium truncate">
                             <Building2 className="w-3.5 h-3.5 text-[#855300] flex-shrink-0" />
-                            <span className="truncate">{opp.company.trade_name}</span>
+                            <span className="truncate"><strong>Empresa:</strong> {opp.company.trade_name}</span>
                           </div>
                         )}
                         {opp.person && (
                           <div className="flex items-center gap-1.5 font-medium truncate">
                             <User className="w-3.5 h-3.5 text-[#496636] flex-shrink-0" />
-                            <span className="truncate">{opp.person.name}</span>
-                          </div>
-                        )}
-                        {!opp.company && !opp.person && opp.contact_name && (
-                          <div className="flex items-center gap-1.5 font-medium truncate">
-                            <User className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                            <span className="truncate">{opp.contact_name}</span>
-                          </div>
-                        )}
-                        {opp.contact_phone && (
-                          <div className="flex items-center gap-1.5 text-[11px] text-[#715b41]">
-                            <Phone className="w-3 h-3 text-[#496636]" />
-                            <span>{opp.contact_phone}</span>
+                            <span className="truncate"><strong>Pessoa:</strong> {opp.person.name}</span>
                           </div>
                         )}
                         {opp.quantity && (
-                          <div className="text-[11px] font-semibold text-[#855300]">
-                            🍪 {opp.quantity} unidades estimadas
-                          </div>
-                        )}
-                        {opp.event_date && (
-                          <div className="flex items-center gap-1 text-[11px] text-purple-700 font-medium">
-                            <Calendar className="w-3 h-3" /> Evento: {opp.event_date}
-                          </div>
-                        )}
-                        {opp.stage === 'perdido' && opp.loss_reason && (
-                          <div className="text-[11px] text-rose-700 bg-rose-50 p-1.5 rounded-lg border border-rose-200 mt-1">
-                            <strong>Motivo:</strong> {opp.loss_reason}
+                          <div className="text-[11px] font-semibold text-[#855300] flex items-center gap-1">
+                            <span>🍪</span>
+                            <span><strong>Qtd:</strong> {opp.quantity} un</span>
                           </div>
                         )}
                       </div>
 
-                      {/* Rodapé do Card: Valor & Ações */}
+                      {/* Rodapé do Card: Valor Estimado & Ações */}
                       <div className="mt-3 pt-2 border-t border-[#f2e6dc] flex items-center justify-between">
                         <div className="font-extrabold text-sm text-[#211a14]">
+                          <span className="text-[11px] font-normal text-[#715b41] block">Valor Est.:</span>
                           {formatCurrency(opp.value)}
                         </div>
 
@@ -578,10 +572,11 @@ export default function PipelineKanban() {
               {/* Descrição */}
               <div>
                 <label className="block text-xs font-bold text-[#211a14] mb-1">
-                  Descrição & Especificações dos Biscoitos
+                  Descrição & Especificações dos Biscoitos *
                 </label>
                 <textarea
                   rows={2}
+                  required
                   placeholder="Sabores desejados, embalagens personalizadas, temática, restrições alimentares..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -619,9 +614,10 @@ export default function PipelineKanban() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#211a14] mb-1">
-                    Prioridade
+                    Prioridade *
                   </label>
                   <select
+                    required
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                     className="w-full text-xs bg-[#f7ede5] border border-[#d4c3b5] rounded-xl px-3 py-2 text-[#211a14] focus:outline-hidden"
@@ -638,9 +634,10 @@ export default function PipelineKanban() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#d4c3b5]/60">
                 <div>
                   <label className="block text-xs font-bold text-[#211a14] mb-1">
-                    Tipo de Cliente
+                    Tipo de Cliente *
                   </label>
                   <select
+                    required
                     value={formData.customer_type}
                     onChange={(e) => setFormData({ ...formData, customer_type: e.target.value })}
                     className="w-full text-xs bg-[#f7ede5] border border-[#d4c3b5] rounded-xl px-3 py-2 text-[#211a14] focus:outline-hidden"
@@ -652,7 +649,7 @@ export default function PipelineKanban() {
 
                 <div>
                   <label className="block text-xs font-bold text-[#211a14] mb-1">
-                    Empresa Cadastrada (Opcional)
+                    Empresa Cadastrada
                   </label>
                   <select
                     value={formData.company_id}
@@ -668,7 +665,7 @@ export default function PipelineKanban() {
 
                 <div>
                   <label className="block text-xs font-bold text-[#211a14] mb-1">
-                    Pessoa Cadastrada (Opcional)
+                    Pessoa Cadastrada
                   </label>
                   <select
                     value={formData.person_id}
@@ -744,7 +741,7 @@ export default function PipelineKanban() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#211a14] mb-1">
-                    Data do Evento / Entrega
+                    Data da Entrega
                   </label>
                   <input
                     type="date"
