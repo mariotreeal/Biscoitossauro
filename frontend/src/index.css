@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Material Design 3 Palette - Biscoitossauro Warm & Crisp */
+    --md-sys-color-primary: #855300;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #ffddb8;
+    --md-sys-color-on-primary-container: #2b1700;
+    --md-sys-color-secondary: #715b41;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #feddbd;
+    --md-sys-color-on-secondary-container: #281805;
+    --md-sys-color-tertiary: #496636;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #caeca0;
+    --md-sys-color-on-tertiary-container: #0b2000;
+    --md-sys-color-background: #fff8f4;
+    --md-sys-color-on-background: #211a14;
+    --md-sys-color-surface: #fff8f4;
+    --md-sys-color-on-surface: #211a14;
+    --md-sys-color-surface-variant: #f1dfd1;
+    --md-sys-color-on-surface-variant: #50453a;
+    --md-sys-color-outline: #827568;
+    --md-sys-color-outline-variant: #d4c3b5;
+    --md-sys-color-surface-container: #f7ede5;
+    --md-sys-color-surface-container-high: #f1e7df;
+    --md-sys-color-surface-container-highest: #ebe1d9;
+    --md-sys-color-surface-container-low: #fdf3eb;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material Design 3 Elevation shadows */
+.m3-elevation-1 {
+  box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+}
+
+.m3-elevation-2 {
+  box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+}
+
+.m3-elevation-3 {
+  box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+}

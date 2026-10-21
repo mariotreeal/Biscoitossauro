@@ -1,0 +1,18 @@
+# Ambientes virtuais Python
+backend/venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+
+# Dependências Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Logs e arquivos de sistema
+*.log
+.DS_Store
+.env
+.env.local
