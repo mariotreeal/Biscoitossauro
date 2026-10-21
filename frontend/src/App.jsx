@@ -9,6 +9,7 @@ import UsersList from './components/UsersList';
 import PipelineKanban from './components/PipelineKanban';
 import OrdersList from './components/OrdersList';
 import InstagramMonitor from './components/InstagramMonitor';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import api from './services/api';
 import { Menu, Bell, Sparkles } from 'lucide-react';
 
@@ -18,6 +19,13 @@ export default function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [metrics, setMetrics] = useState(null);
+
+  // Rota pública para Política de Privacidade (requisito Meta API)
+  const isPrivacyPage = window.location.pathname === '/privacidade' || window.location.pathname === '/privacy';
+
+  if (isPrivacyPage) {
+    return <PrivacyPolicy />;
+  }
 
   const fetchDashboardMetrics = async () => {
     try {
