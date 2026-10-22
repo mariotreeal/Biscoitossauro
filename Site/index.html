@@ -25,13 +25,25 @@ img{max-width:100%;display:block}
 section{padding:64px 0}
 .alt-bg{background:var(--soft)}
 
-/* topo */
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(90deg,#134f24,#19642e);color:#fff;box-shadow:0 2px 10px rgba(19,79,36,0.15)}
-header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
-.brand{font:600 20px 'Fredoka',sans-serif}
-nav{display:flex;gap:22px;font-size:14px;font-weight:500}
-nav a:hover{text-decoration:underline}
-.menu-btn{display:none;background:none;border:0;color:#fff;font-size:26px;cursor:pointer}
+
+/* topo e menu modernizado */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:99;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--ink);border-bottom:1px solid rgba(123,75,39,0.1);box-shadow:0 4px 20px rgba(74,43,19,0.04);transition:all .25s ease}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:70px;gap:14px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.brand-icon{font-size:26px;display:inline-block;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));transition:transform .2s ease}
+.brand:hover .brand-icon{transform:scale(1.15) rotate(-4deg)}
+.brand-text{font:700 22px 'Fredoka',sans-serif;color:var(--brown2);letter-spacing:-0.2px}
+.brand-badge{font:600 10px 'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:0.8px;background:var(--soft);color:var(--green2);padding:3px 9px;border-radius:999px;border:1px solid rgba(34,134,58,0.2)}
+nav{display:flex;align-items:center;gap:6px}
+.nav-item{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--muted);padding:8px 14px;border-radius:999px;background:transparent;border:1px solid transparent;transition:all .2s ease}
+.nav-item .nav-ico{font-size:15px;transition:transform .2s ease}
+.nav-item:hover{color:var(--green2);background:var(--soft);border-color:rgba(34,134,58,0.18);transform:translateY(-1px)}
+.nav-item:hover .nav-ico{transform:scale(1.2)}
+.nav-item.nav-highlight{background:rgba(123,75,39,0.06);color:var(--brown2);border-color:rgba(123,75,39,0.18)}
+.nav-item.nav-highlight:hover{background:var(--brown);color:#fff;border-color:var(--brown)}
+.nav-cta{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;padding:9px 18px!important}
+.menu-btn{display:none;background:none;border:0;color:var(--brown2);font-size:26px;cursor:pointer}
+
 
 /* botões */
 .btn{display:inline-block;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;box-shadow:0 4px 14px rgba(19,84,36,0.28);transition:all .2s ease;letter-spacing:0.2px}
@@ -99,8 +111,9 @@ footer{padding:28px 0;text-align:center;color:var(--muted);font-size:13px}
 
 @media(max-width:760px){
   .menu-btn{display:block}
-  nav{display:none;position:absolute;top:60px;left:0;right:0;background:var(--green2);flex-direction:column;padding:16px 20px;gap:14px}
+  nav{display:none;position:absolute;top:70px;left:0;right:0;background:var(--card);flex-direction:column;padding:18px 20px;gap:8px;box-shadow:0 12px 30px rgba(0,0,0,0.1);border-bottom:1px solid var(--line)}
   nav.open{display:flex}
+  .nav-item{width:100%;justify-content:flex-start;padding:10px 16px;background:var(--bg);border:1px solid var(--line)}
   header .btn{display:none}
   .hero .wrap{grid-template-columns:1fr}
   .hero img{max-width:340px;margin:0 auto}
@@ -204,22 +217,48 @@ details p{margin:10px 0 0;color:var(--muted);font-size:15px}
 .showcase figcaption{padding:14px 16px;font:600 17px 'Fredoka',sans-serif;color:var(--brown2)}
 .showcase-title{text-align:center;margin:44px 0 0;font-size:clamp(22px,3.4vw,30px);color:var(--brown2)}
 @media(min-width:761px){.showcase{grid-template-columns:repeat(3,1fr)}}
+
+
+/* elementos gráficos aprimorados */
+.ico{font-size:28px;width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--soft),#def0db);display:grid;place-items:center;margin-bottom:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 4px 12px rgba(34,134,58,0.12);border:1px solid rgba(34,134,58,0.15)}
+.ico svg{width:28px;height:28px}
+
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.step{background:var(--card);border:1px solid var(--line-subtle);border-radius:20px;padding:26px;box-shadow:var(--shadow-sm);transition:all .25s ease;position:relative}
+.step:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:rgba(34,134,58,0.25)}
+.step:before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font:700 20px 'Fredoka',sans-serif;margin-bottom:16px;box-shadow:0 4px 12px rgba(19,84,36,0.22)}
+
+.tab{border:1.5px solid var(--line);background:var(--card);color:var(--brown2);font:600 13.5px 'Montserrat',sans-serif;padding:9px 20px;border-radius:999px;cursor:pointer;transition:all .2s ease;box-shadow:var(--shadow-sm)}
+.tab:hover{border-color:var(--brown);background:var(--soft-cream);transform:translateY(-1px)}
+.tab.on{background:linear-gradient(135deg,var(--brown),var(--brown2));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(74,43,19,0.25)}
+
+.showcase figure{margin:0;background:var(--card);border:1px solid var(--line-subtle);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-sm);transition:all .25s ease}
+.showcase figure:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.showcase figcaption{padding:16px 20px;font:600 17px 'Fredoka',sans-serif;color:var(--brown2);border-top:1px solid var(--line)}
+
+.strip{background:linear-gradient(135deg,#42240e,#543014);color:#fff;padding:18px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.08)}
 </style>
 </head>
 <body>
 
 <header>
   <div class="wrap">
-    <a class="brand" href="#inicio">Biscoitossauro</a>
+    <a class="brand" href="#inicio">
+      <span class="brand-icon">🦕</span>
+      <span class="brand-text">Biscoitossauro</span>
+      <span class="brand-badge">Corporativo</span>
+    </a>
     <nav id="nav">
-      <a href="#personalizados">Soluções Corporativas</a>
-      <a href="#cardapio">Sabores & Formatos</a>
-      <a href="#como">Como Trabalhamos</a>
-      <a href="#sobre">Sobre Nós</a>
-      <a href="#orcamento">Solicitar Proposta</a>
-      <a href="#faq">Dúvidas</a>
+      <a href="#personalizados" class="nav-item"><span class="nav-ico">🏢</span><span class="nav-text">Soluções B2B</span></a>
+      <a href="#cardapio" class="nav-item"><span class="nav-ico">🍪</span><span class="nav-text">Sabores & Formatos</span></a>
+      <a href="#como" class="nav-item"><span class="nav-ico">⚙️</span><span class="nav-text">Como Funciona</span></a>
+      <a href="#sobre" class="nav-item"><span class="nav-ico">✨</span><span class="nav-text">Sobre Nós</span></a>
+      <a href="#orcamento" class="nav-item nav-highlight"><span class="nav-ico">📋</span><span class="nav-text">Solicitar Proposta</span></a>
+      <a href="#faq" class="nav-item"><span class="nav-ico">💡</span><span class="nav-text">Dúvidas</span></a>
     </nav>
-    <a class="btn sm" href="https://wa.me/5511991061438?text=Ol%C3%A1%21%20Gostaria%20de%20solicitar%20uma%20proposta%20comercial%20de%20biscoitos%20personalizados%20para%20a%20minha%20empresa." target="_blank" rel="noopener">Atendimento B2B</a>
+    <a class="btn sm nav-cta" href="https://wa.me/5511991061438?text=Ol%C3%A1%21%20Gostaria%20de%20solicitar%20uma%20proposta%20comercial%20de%20biscoitos%20personalizados%20para%20a%20minha%20empresa." target="_blank" rel="noopener">
+      <span>💬</span> Atendimento B2B
+    </a>
     <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false">☰</button>
   </div>
 </header>
